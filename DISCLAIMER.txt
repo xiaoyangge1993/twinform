@@ -1,0 +1,11 @@
+Twinform 生成的是报价单或形式发票（quotation / pro forma invoice）。
+它不是中国增值税发票，也不是任何税务机关出具或认可的发票。
+本工具不计算应纳税额，不构成税务或法律建议。
+单据上的税费行由使用者自行填写，仅用于展示。
+所有单据数据只保存在使用者的浏览器中，不会上传到服务器。
+
+Twinform produces quotations or pro forma invoices.
+It is not a China VAT invoice and is not issued or endorsed by any tax authority.
+It does not calculate tax liability and does not constitute tax or legal advice.
+Any tax line is entered by the user and shown for document purposes only.
+Document data stays in the user's browser and is not uploaded to a server.
