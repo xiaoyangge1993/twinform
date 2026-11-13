@@ -91,16 +91,19 @@
       bankAddr: "开户行地址",
       payExtra: "其他付款说明",
       proTitle: "Pro 功能",
-      proHint: "有效许可证可去掉水印并解锁批量导出。现代 / 极简模板可随时预览，未激活时导出仍带水印。商品尚未上架，购买按钮只打开说明页，不会进入结账。",
+      proHint: "有效许可证可去掉水印并解锁批量导出。可粘贴 Gumroad 付款后收到的 license key，或以 TF1_ 开头的签名码。现代 / 极简模板可随时预览，未激活时导出仍带水印。购买入口指向 Gumroad；面包多即将上线。",
       licenseLabel: "许可证",
-      licensePlaceholder: "粘贴以 TF1_ 开头的许可证（空格和换行会被忽略）",
+      licensePlaceholder: "粘贴 Gumroad license key，或以 TF1_ 开头的签名码（空格和换行会被忽略）",
       licenseActivate: "激活",
       licenseActivated: "许可证已在本机激活。去水印和批量导出已解锁。",
       licenseClear: "移除本机许可证",
       licenseInvalid: "这不是有效的许可证。请检查是否完整粘贴，或向购买渠道重新获取。",
       licenseEmpty: "请先粘贴许可证。",
       licenseBusy: "正在校验…",
-      buyCta: "购买说明",
+      licenseNetwork: "暂时无法校验购买许可证，请检查网络后重试。",
+      licenseRevoked: "这份许可证已退款或发生争议，无法激活。",
+      buyCta: "购买 Pro · $15",
+      buyHelp: "购买说明",
       template: "模板",
       locked: "可预览",
       batch: "批量导出",
@@ -184,16 +187,19 @@
       bankAddr: "Bank address",
       payExtra: "Other payment notes",
       proTitle: "Pro features",
-      proHint: "A valid license removes the watermark and unlocks batch export. Modern and Minimal templates can be previewed anytime; exports stay watermarked until a license is activated. The product is not for sale yet — the purchase button only opens a placeholder page and does not start checkout.",
+      proHint: "A valid license removes the watermark and unlocks batch export. Paste the Gumroad license key from your receipt, or a signed code that starts with TF1_. Modern and Minimal templates can be previewed anytime; exports stay watermarked until a license is activated. The purchase button goes to Gumroad. 面包多 is coming soon.",
       licenseLabel: "License",
-      licensePlaceholder: "Paste a license that starts with TF1_ (spaces and line breaks are ignored)",
+      licensePlaceholder: "Paste a Gumroad license key, or a signed code that starts with TF1_ (spaces and line breaks are ignored)",
       licenseActivate: "Activate",
       licenseActivated: "A license is active in this browser. The watermark is off and batch export is unlocked.",
       licenseClear: "Remove license from this browser",
       licenseInvalid: "That is not a valid license. Paste the full code, or request a new one from the seller.",
       licenseEmpty: "Paste a license first.",
       licenseBusy: "Checking…",
-      buyCta: "How to buy",
+      licenseNetwork: "Could not reach the license server. Check your connection and try again.",
+      licenseRevoked: "This license has been refunded or disputed and cannot be activated.",
+      buyCta: "Buy Pro · $15",
+      buyHelp: "How it works",
       template: "Template",
       locked: "Preview",
       batch: "Batch export",
@@ -682,6 +688,8 @@
                    <button class="btn btn-primary" type="button" data-action="activate-license">${t("licenseActivate")}</button>
                  </div>
                  ${licenseNotice === "invalid" ? `<p class="license-status err">${t("licenseInvalid")}</p>` : ""}
+                 ${licenseNotice === "revoked" ? `<p class="license-status err">${t("licenseRevoked")}</p>` : ""}
+                 ${licenseNotice === "network" ? `<p class="license-status err">${t("licenseNetwork")}</p>` : ""}
                  ${licenseNotice === "empty" ? `<p class="license-status err">${t("licenseEmpty")}</p>` : ""}
                  ${licenseNotice === "busy" ? `<p class="license-status">${t("licenseBusy")}</p>` : ""}`
           }
@@ -697,7 +705,8 @@
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
           <button class="btn" data-action="batch" ${pro ? "" : "disabled"}>${t("batch")}</button>
-          <a class="btn-pro" href="purchase.html">${t("buyCta")}</a>
+          <a class="btn-pro" href="${escapeHtml((window.TwinformLicense && TwinformLicense.GUMROAD_URL) || "https://xiaoxiaoyang.gumroad.com/l/eirdia")}" target="_blank" rel="noopener noreferrer">${t("buyCta")}</a>
+          <a class="btn btn-ghost" href="purchase.html">${t("buyHelp")}</a>
         </div>
         <p class="hint">${t("batchHint")}</p>
       </div>
@@ -1225,7 +1234,7 @@
 
   window.addEventListener("resize", () => scalePreview());
 
-  async function activateLicense(code, { persistInvalid = false } = {}) {
+  async function activateLicense(code, { allowOffline = false } = {}) {
     const trimmed = String(code || "").trim();
     if (!trimmed) {
       licenseNotice = "empty";
@@ -1245,10 +1254,12 @@
       } catch (_) {}
       return true;
     }
-    if (persistInvalid) {
-      licensed = false;
+    if (allowOffline && result && result.reason === "network") {
+      licensed = true;
+      licenseNotice = "ok";
+      return true;
     }
-    licenseNotice = "invalid";
+    licenseNotice = result && result.reason === "revoked" ? "revoked" : result && result.reason === "network" ? "network" : "invalid";
     return false;
   }
 
@@ -1285,7 +1296,7 @@
       stored = localStorage.getItem(STORAGE_LICENSE) || "";
     } catch (_) {}
     if (stored) {
-      const ok = await activateLicense(stored);
+      const ok = await activateLicense(stored, { allowOffline: true });
       if (!ok) clearLicense();
       return ok;
     }

@@ -14,9 +14,9 @@ Open the hosted tool: <https://xiaoyangge1993.github.io/twinform/>
 
 Add `?demo=1` to load a **fictional** example (names, addresses, and payment details are not real).
 
-The free version shows a small “Twinform Free” watermark. You can preview the Modern and Minimal templates without a license; exports stay watermarked until you activate one. Paste a license that starts with `TF1_` on the tool page, or open `?license=YOUR_CODE`. A valid license is stored in this browser only.
+The free version shows a small “Twinform Free” watermark. You can preview the Modern and Minimal templates without a license; exports stay watermarked until you activate one. Paste the Gumroad license key from your receipt, or a signed code that starts with `TF1_`, or open `?license=YOUR_CODE`. A valid license is stored in this browser only.
 
-Pro is **not for sale yet**. The purchase button opens a placeholder page and does not start checkout.
+Buy Pro on Gumroad: <https://xiaoxiaoyang.gumroad.com/l/eirdia> ($15). A 面包多 listing is coming soon. See also `purchase.html` for activation steps.
 
 Or run it locally:
 
@@ -35,7 +35,7 @@ Then visit <http://127.0.0.1:4173/>.
 - Drafts saved in this browser only
 - Download PDF, or use Print → Save as PDF
 
-The free version includes a small watermark. Batch export and watermark-free PDFs require a signed license. The product is not listed for sale yet.
+The free version includes a small watermark. Batch export and watermark-free PDFs require a Gumroad license key or a signed `TF1_` license.
 
 ## License
 
