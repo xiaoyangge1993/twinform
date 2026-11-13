@@ -75,12 +75,15 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .btn-pro {
   background: #fffdf8; border: 1px dashed var(--gold); color: var(--ink-soft);
   font-weight: 700; padding: 7px 12px; border-radius: 9px; font-size: 13px;
+  text-decoration: none; display: inline-block;
 }
+.btn-pro:hover { border-style: solid; color: var(--ink); }
 .pill {
   font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
   background: var(--accent-soft); color: var(--accent);
 }
 .pill.free { background: var(--panel-2); color: var(--ink-soft); }
+.pill.pro { background: #f3ead8; color: #6b5428; }
 
 .layout {
   display: grid;
@@ -158,6 +161,25 @@ label.lbl input:focus, label.lbl select:focus, label.lbl textarea:focus {
 }
 .pro-box h3 { margin: 0 0 8px; font-size: 14px; }
 .lock { color: var(--ink-faint); font-size: 12px; }
+.license-box { margin: 10px 0 4px; }
+.license-label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.license-input {
+  width: 100%; min-height: 72px; resize: vertical;
+  border: 1px solid var(--line-strong); border-radius: 8px;
+  padding: 8px 10px; font-size: 12px; line-height: 1.45;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: #fff;
+}
+.license-input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.license-actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+.license-status { margin: 8px 0 0; font-size: 12px; line-height: 1.45; }
+.license-status.ok { color: var(--accent); font-weight: 700; }
+.license-status.err { color: var(--danger); font-weight: 700; }
+.purchase-page { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+.purchase-page h1 { font-size: 28px; margin: 16px 0 8px; }
+.purchase-page h2 { font-size: 16px; margin: 24px 0 8px; }
+.purchase-page p, .purchase-page li { font-size: 15px; line-height: 1.65; color: var(--ink-soft); }
+.purchase-page .back { display: inline-block; margin-top: 8px; }
 
 .preview-toolbar {
   width: min(100%, 210mm);

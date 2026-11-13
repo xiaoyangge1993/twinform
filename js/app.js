@@ -3,7 +3,8 @@
 (() => {
   const STORAGE_CURRENT = "twinform.current.v1";
   const STORAGE_DRAFTS = "twinform.drafts.v1";
-  const STORAGE_PRO = "twinform.proPreview.v1";
+  const STORAGE_LICENSE = "twinform.license.v1";
+  const STORAGE_PRO_LEGACY = "twinform.proPreview.v1";
   const STORAGE_UI = "twinform.uiLang.v1";
 
   const DISCLAIMER = {
@@ -90,13 +91,20 @@
       bankAddr: "开户行地址",
       payExtra: "其他付款说明",
       proTitle: "Pro 功能",
-      proHint: "去水印、多模板、批量导出草稿。购买入口本版尚未开放，不会向任何地址跳转。",
-      proPreview: "本地预览 Pro（只为查看效果，不是已购买）",
-      buySoon: "购买入口即将开放",
+      proHint: "有效许可证可去掉水印并解锁批量导出。现代 / 极简模板可随时预览，未激活时导出仍带水印。商品尚未上架，购买按钮只打开说明页，不会进入结账。",
+      licenseLabel: "许可证",
+      licensePlaceholder: "粘贴以 TF1_ 开头的许可证（空格和换行会被忽略）",
+      licenseActivate: "激活",
+      licenseActivated: "许可证已在本机激活。去水印和批量导出已解锁。",
+      licenseClear: "移除本机许可证",
+      licenseInvalid: "这不是有效的许可证。请检查是否完整粘贴，或向购买渠道重新获取。",
+      licenseEmpty: "请先粘贴许可证。",
+      licenseBusy: "正在校验…",
+      buyCta: "购买说明",
       template: "模板",
-      locked: "Pro",
+      locked: "可预览",
       batch: "批量导出",
-      batchHint: "从已存草稿中勾选，依次下载 PDF。免费版此功能锁定。",
+      batchHint: "从已存草稿中勾选，依次下载 PDF。未激活许可证时此功能锁定。",
       overflow: "内容可能超出一页，请减少行数或备注后再导出。",
       fit: "预览已按窗口缩放，导出仍为 A4。",
       saved: "已自动保存到本机",
@@ -176,13 +184,20 @@
       bankAddr: "Bank address",
       payExtra: "Other payment notes",
       proTitle: "Pro features",
-      proHint: "No watermark, extra templates, and batch export. The purchase entry is not open in this build and does not go to any checkout URL.",
-      proPreview: "Preview Pro locally (for review only; not a purchase)",
-      buySoon: "Purchase link coming soon",
+      proHint: "A valid license removes the watermark and unlocks batch export. Modern and Minimal templates can be previewed anytime; exports stay watermarked until a license is activated. The product is not for sale yet — the purchase button only opens a placeholder page and does not start checkout.",
+      licenseLabel: "License",
+      licensePlaceholder: "Paste a license that starts with TF1_ (spaces and line breaks are ignored)",
+      licenseActivate: "Activate",
+      licenseActivated: "A license is active in this browser. The watermark is off and batch export is unlocked.",
+      licenseClear: "Remove license from this browser",
+      licenseInvalid: "That is not a valid license. Paste the full code, or request a new one from the seller.",
+      licenseEmpty: "Paste a license first.",
+      licenseBusy: "Checking…",
+      buyCta: "How to buy",
       template: "Template",
-      locked: "Pro",
+      locked: "Preview",
       batch: "Batch export",
-      batchHint: "Pick saved drafts and download PDFs one by one. Locked on the free plan.",
+      batchHint: "Pick saved drafts and download PDFs one by one. Locked until a license is activated.",
       overflow: "Content may overflow one page. Shorten the document before exporting.",
       fit: "Preview is scaled to the window; the export stays A4.",
       saved: "Saved locally in this browser",
@@ -325,13 +340,14 @@
   }
 
   let uiLang = localStorage.getItem(STORAGE_UI) || "zh";
-  let proPreview = localStorage.getItem(STORAGE_PRO) === "1";
+  let licensed = false;
+  let licenseNotice = ""; // "ok" | "invalid" | "empty" | "busy" | ""
   let state = loadCurrent() || defaultState();
   let modal = null;
   let overflow = false;
 
   function isPro() {
-    return proPreview === true;
+    return licensed === true;
   }
 
   function t(key) {
@@ -460,7 +476,7 @@
     const app = document.getElementById("app");
     const tot = totals();
     const pro = isPro();
-    const effectiveTemplate = !pro && state.template !== "classic" ? "classic" : state.template;
+    const effectiveTemplate = state.template;
 
     app.innerHTML = `
       <header class="app-header">
@@ -483,7 +499,7 @@
               .map((c) => `<option value="${c}" ${state.currency === c ? "selected" : ""}>${c}</option>`)
               .join("")}</select>
           </label>
-          <span class="pill ${pro ? "" : "free"}">${pro ? "Pro 预览" : "Free"}</span>
+          <span class="pill ${pro ? "pro" : "free"}">${pro ? "Pro" : "Free"}</span>
         </div>
         <div class="header-actions">
           <div class="seg" data-ui-lang>
@@ -655,19 +671,33 @@
       <div class="section pro-box">
         <h3>${t("proTitle")}</h3>
         <p class="hint">${t("proHint")}</p>
-        <label class="check"><input type="checkbox" data-action="pro-preview" ${pro ? "checked" : ""}> ${t("proPreview")}</label>
+        <div class="license-box">
+          <label class="license-label" for="license-input">${t("licenseLabel")}</label>
+          ${
+            pro
+              ? `<p class="license-status ok">${t("licenseActivated")}</p>
+                 <button class="btn" type="button" data-action="clear-license">${t("licenseClear")}</button>`
+              : `<textarea id="license-input" class="license-input" data-license-input rows="3" spellcheck="false" placeholder="${escapeHtml(t("licensePlaceholder"))}"></textarea>
+                 <div class="license-actions">
+                   <button class="btn btn-primary" type="button" data-action="activate-license">${t("licenseActivate")}</button>
+                 </div>
+                 ${licenseNotice === "invalid" ? `<p class="license-status err">${t("licenseInvalid")}</p>` : ""}
+                 ${licenseNotice === "empty" ? `<p class="license-status err">${t("licenseEmpty")}</p>` : ""}
+                 ${licenseNotice === "busy" ? `<p class="license-status">${t("licenseBusy")}</p>` : ""}`
+          }
+        </div>
         <div style="margin:10px 0 8px">
           <span class="lock">${t("template")}</span>
           <div class="seg" data-field="template" style="margin-left:8px">
             ${TEMPLATES.map((tpl) => {
-              const locked = tpl.pro && !pro;
-              return `<button type="button" data-value="${tpl.id}" aria-pressed="${effectiveTemplate === tpl.id}" ${locked ? "disabled" : ""}>${uiLang === "en" ? tpl.en : tpl.zh}${tpl.pro ? " · " + t("locked") : ""}</button>`;
+              const tag = tpl.pro && !pro ? " · " + t("locked") : "";
+              return `<button type="button" data-value="${tpl.id}" aria-pressed="${effectiveTemplate === tpl.id}">${uiLang === "en" ? tpl.en : tpl.zh}${tag}</button>`;
             }).join("")}
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
           <button class="btn" data-action="batch" ${pro ? "" : "disabled"}>${t("batch")}</button>
-          <button class="btn-pro" type="button" data-action="buy" disabled>${t("buySoon")}</button>
+          <a class="btn-pro" href="purchase.html">${t("buyCta")}</a>
         </div>
         <p class="hint">${t("batchHint")}</p>
       </div>
@@ -902,7 +932,6 @@
       btn.addEventListener("click", () => {
         const field = btn.parentElement.getAttribute("data-field");
         const value = btn.getAttribute("data-value");
-        if (field === "template" && value !== "classic" && !isPro()) return;
         if (field === "docType" && !state.numberManual) {
           const wasDefault = /^Q-\d{4}-/.test(state.number) || /^PF-\d{4}-/.test(state.number);
           state.docType = value;
@@ -984,13 +1013,13 @@
         } else if (action === "remove-logo") {
           state.seller.logo = "";
           persistAndRender();
-        } else if (action === "pro-preview") {
-          proPreview = el.checked;
-          localStorage.setItem(STORAGE_PRO, proPreview ? "1" : "0");
-          if (!proPreview && state.template !== "classic") state.template = "classic";
+        } else if (action === "activate-license") {
+          const input = app.querySelector("[data-license-input]");
+          const code = input ? input.value : "";
+          activateLicense(code).then(() => render());
+        } else if (action === "clear-license") {
+          clearLicense();
           persistAndRender();
-        } else if (action === "buy") {
-          e.preventDefault();
         } else if (action === "save-draft") {
           const input = app.querySelector("[data-bind='_draftName']");
           const name = (input && input.value.trim()) || defaultDraftName();
@@ -1049,7 +1078,7 @@
   function refreshPreviewOnly() {
     const tot = totals();
     const pro = isPro();
-    const effectiveTemplate = !pro && state.template !== "classic" ? "classic" : state.template;
+    const effectiveTemplate = state.template;
     const wrap = document.getElementById("previewScale");
     if (!wrap) return;
     wrap.innerHTML = renderSheet(tot, pro, effectiveTemplate);
@@ -1196,19 +1225,90 @@
 
   window.addEventListener("resize", () => scalePreview());
 
+  async function activateLicense(code, { persistInvalid = false } = {}) {
+    const trimmed = String(code || "").trim();
+    if (!trimmed) {
+      licenseNotice = "empty";
+      return false;
+    }
+    if (!window.TwinformLicense || typeof TwinformLicense.verify !== "function") {
+      licenseNotice = "invalid";
+      return false;
+    }
+    licenseNotice = "busy";
+    const result = await TwinformLicense.verify(trimmed);
+    if (result && result.ok) {
+      licensed = true;
+      licenseNotice = "ok";
+      try {
+        localStorage.setItem(STORAGE_LICENSE, result.normalized || TwinformLicense.normalize(trimmed));
+      } catch (_) {}
+      return true;
+    }
+    if (persistInvalid) {
+      licensed = false;
+    }
+    licenseNotice = "invalid";
+    return false;
+  }
+
+  function clearLicense() {
+    licensed = false;
+    licenseNotice = "";
+    try {
+      localStorage.removeItem(STORAGE_LICENSE);
+    } catch (_) {}
+  }
+
+  function stripLicenseQuery() {
+    const params = new URLSearchParams(location.search);
+    if (!params.has("license")) return;
+    params.delete("license");
+    const qs = params.toString();
+    const url = location.pathname + (qs ? "?" + qs : "") + location.hash;
+    history.replaceState({}, "", url);
+  }
+
+  async function bootLicense() {
+    try {
+      localStorage.removeItem(STORAGE_PRO_LEGACY);
+    } catch (_) {}
+    const params = new URLSearchParams(location.search);
+    const fromQuery = params.get("license");
+    if (fromQuery != null && String(fromQuery).length) {
+      const ok = await activateLicense(fromQuery);
+      stripLicenseQuery();
+      return ok;
+    }
+    let stored = "";
+    try {
+      stored = localStorage.getItem(STORAGE_LICENSE) || "";
+    } catch (_) {}
+    if (stored) {
+      const ok = await activateLicense(stored);
+      if (!ok) clearLicense();
+      return ok;
+    }
+    return false;
+  }
+
   window.Twinform = {
     loadExample() {
       state = exampleState();
       persistAndRender();
     },
-    setProPreview(on) {
-      proPreview = !!on;
-      localStorage.setItem(STORAGE_PRO, proPreview ? "1" : "0");
-      if (!proPreview && state.template !== "classic") state.template = "classic";
+    applyLicense(code) {
+      return activateLicense(code).then((ok) => {
+        render();
+        return ok;
+      });
+    },
+    clearLicense() {
+      clearLicense();
       persistAndRender();
     },
     setTemplate(id) {
-      if (id !== "classic" && !isPro()) return;
+      if (!TEMPLATES.some((x) => x.id === id)) return;
       state.template = id;
       persistAndRender();
     },
@@ -1223,15 +1323,10 @@
     downloadPdf,
     getState: () => state,
     isPro,
-    ready: waitFonts,
   };
 
   const params = new URLSearchParams(location.search);
   if (params.get("demo") === "1") state = exampleState();
-  if (params.get("pro") === "1") {
-    proPreview = true;
-    localStorage.setItem(STORAGE_PRO, "1");
-  }
   if (params.get("template") && TEMPLATES.some((x) => x.id === params.get("template"))) {
     state.template = params.get("template");
   }
@@ -1244,9 +1339,12 @@
     localStorage.setItem(STORAGE_UI, uiLang);
   }
 
-  render();
-  waitFonts().then(() => {
-    scalePreview();
-    checkOverflow();
+  const bootPromise = bootLicense().then(() => {
+    render();
+    return waitFonts().then(() => {
+      scalePreview();
+      checkOverflow();
+    });
   });
+  window.Twinform.ready = () => bootPromise;
 })();
