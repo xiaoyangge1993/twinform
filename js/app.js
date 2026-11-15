@@ -477,6 +477,21 @@
     return escapeHtml(v);
   }
 
+
+  function siteFooter() {
+    const twinpack = "https://xiaoyangge1993.github.io/twinpack/";
+    if (uiLang === "en") {
+      return `<footer class="site-footer">
+        <div>Need a commercial invoice and packing list for a shipment? Try <a href="${twinpack}">Twinpack</a>.</div>
+        <div class="foot-note">Twinform is not a VAT invoice and is not tax or legal advice.</div>
+      </footer>`;
+    }
+    return `<footer class="site-footer">
+      <div>需要发货用的商业发票和装箱单？试试 <a href="${twinpack}">Twinpack</a>。</div>
+      <div class="foot-note">Twinform 不是增值税发票，也不构成税务或法律建议。</div>
+    </footer>`;
+  }
+
   /* ---------- render ---------- */
   function render() {
     const app = document.getElementById("app");
@@ -536,6 +551,7 @@
           </div>
         </main>
       </div>
+      ${siteFooter()}
       ${modalHtml()}
     `;
     bind();
