@@ -493,7 +493,60 @@
   }
 
   /* ---------- render ---------- */
+  function captureView() {
+    const app = document.getElementById("app");
+    if (!app) return null;
+    const editor = app.querySelector(".editor");
+    const layout = app.querySelector(".layout");
+    const preview = app.querySelector(".preview-pane");
+    const active = document.activeElement;
+    let focus = null;
+    if (active && app.contains(active)) {
+      focus = {
+        bind: active.getAttribute("data-bind"),
+        item: active.getAttribute("data-item"),
+        k: active.getAttribute("data-k"),
+        license: active.hasAttribute("data-license-input"),
+        start: typeof active.selectionStart === "number" ? active.selectionStart : null,
+        end: typeof active.selectionEnd === "number" ? active.selectionEnd : null,
+      };
+    }
+    return {
+      editor: editor ? editor.scrollTop : 0,
+      layout: layout ? layout.scrollTop : 0,
+      preview: preview ? preview.scrollTop : 0,
+      focus,
+    };
+  }
+
+  function restoreView(saved) {
+    if (!saved) return;
+    const app = document.getElementById("app");
+    if (!app) return;
+    const editor = app.querySelector(".editor");
+    const layout = app.querySelector(".layout");
+    const preview = app.querySelector(".preview-pane");
+    if (editor) editor.scrollTop = saved.editor;
+    if (layout) layout.scrollTop = saved.layout;
+    if (preview) preview.scrollTop = saved.preview;
+    const f = saved.focus;
+    if (!f) return;
+    let el = null;
+    if (f.bind) el = app.querySelector(`[data-bind="${CSS.escape(f.bind)}"]`);
+    else if (f.item != null && f.k) el = app.querySelector(`[data-item="${CSS.escape(String(f.item))}"][data-k="${CSS.escape(f.k)}"]`);
+    else if (f.license) el = app.querySelector("[data-license-input]");
+    if (el && typeof el.focus === "function") {
+      el.focus({ preventScroll: true });
+      if (f.start != null && typeof el.setSelectionRange === "function" && el.type !== "checkbox" && el.type !== "radio") {
+        try {
+          el.setSelectionRange(f.start, f.end);
+        } catch (_) {}
+      }
+    }
+  }
+
   function render() {
+    const savedView = captureView();
     const app = document.getElementById("app");
     const tot = totals();
     const pro = isPro();
@@ -559,6 +612,7 @@
     bind();
     scalePreview();
     checkOverflow();
+    restoreView(savedView);
     document.documentElement.lang = uiLang === "en" ? "en" : "zh-CN";
   }
 
@@ -662,29 +716,25 @@
         <div class="grid-2">
           ${field(t("docDisc"), "docDiscount", { type: "number" })}
         </div>
-        <label class="check" style="margin:8px 0"><input type="checkbox" data-bind="taxEnabled" ${state.taxEnabled ? "checked" : ""}> ${t("taxEnable")}</label>
-        ${
-          state.taxEnabled
-            ? `<div class="grid-2">${field(t("taxName"), "taxName", { placeholder: uiLang === "en" ? "e.g. VAT (if applicable)" : "例如 VAT（如适用）" })}${field(t("taxRate"), "taxRate", { type: "number" })}</div>`
-            : ""
-        }
+        <label class="check" style="margin:8px 0"><input type="checkbox" data-bind="taxEnabled" ${state.taxEnabled ? "checked" : ""}> <span>${t("taxEnable")}</span></label>
+        <div class="pay-fields" data-reveal="taxEnabled" ${state.taxEnabled ? "" : "hidden"}>
+          <div class="grid-2">${field(t("taxName"), "taxName", { placeholder: uiLang === "en" ? "e.g. VAT (if applicable)" : "例如 VAT（如适用）" })}${field(t("taxRate"), "taxRate", { type: "number" })}</div>
+        </div>
         <p class="hint">${t("subtotal")}: ${money(tot.subtotal)} · ${t("total")}: ${money(tot.total)}</p>
       </div>
       <div class="section">
         <h2>${t("payment")}</h2>
         <div class="pay-block">
-          <label class="check"><input type="checkbox" data-bind="payment.paypal" ${p.paypal ? "checked" : ""}> ${t("paypal")}</label>
-          ${p.paypal ? field(t("paypalEmail"), "payment.paypalEmail") : ""}
-          <label class="check"><input type="checkbox" data-bind="payment.wise" ${p.wise ? "checked" : ""}> ${t("wise")}</label>
-          ${p.wise ? field(t("wiseId"), "payment.wiseId") : ""}
-          <label class="check"><input type="checkbox" data-bind="payment.payoneer" ${p.payoneer ? "checked" : ""}> ${t("payoneer")}</label>
-          ${p.payoneer ? field(t("payoneerId"), "payment.payoneerId") : ""}
-          <label class="check"><input type="checkbox" data-bind="payment.bank" ${p.bank ? "checked" : ""}> ${t("bank")}</label>
-          ${
-            p.bank
-              ? `<div class="grid-2">${field(t("bankName"), "payment.bankName")}${field(t("accountName"), "payment.accountName")}${field(t("accountNo"), "payment.accountNo")}${field(t("swift"), "payment.swift")}${field(t("bankAddr"), "payment.bankAddr", { span: "full" })}</div>`
-              : ""
-          }
+          <label class="check"><input type="checkbox" data-bind="payment.paypal" ${p.paypal ? "checked" : ""}> <span>${t("paypal")}</span></label>
+          <div class="pay-fields" data-reveal="payment.paypal" ${p.paypal ? "" : "hidden"}>${field(t("paypalEmail"), "payment.paypalEmail")}</div>
+          <label class="check"><input type="checkbox" data-bind="payment.wise" ${p.wise ? "checked" : ""}> <span>${t("wise")}</span></label>
+          <div class="pay-fields" data-reveal="payment.wise" ${p.wise ? "" : "hidden"}>${field(t("wiseId"), "payment.wiseId")}</div>
+          <label class="check"><input type="checkbox" data-bind="payment.payoneer" ${p.payoneer ? "checked" : ""}> <span>${t("payoneer")}</span></label>
+          <div class="pay-fields" data-reveal="payment.payoneer" ${p.payoneer ? "" : "hidden"}>${field(t("payoneerId"), "payment.payoneerId")}</div>
+          <label class="check"><input type="checkbox" data-bind="payment.bank" ${p.bank ? "checked" : ""}> <span>${t("bank")}</span></label>
+          <div class="pay-fields" data-reveal="payment.bank" ${p.bank ? "" : "hidden"}>
+            <div class="grid-2">${field(t("bankName"), "payment.bankName")}${field(t("accountName"), "payment.accountName")}${field(t("accountNo"), "payment.accountNo")}${field(t("swift"), "payment.swift")}${field(t("bankAddr"), "payment.bankAddr", { span: "full" })}</div>
+          </div>
           ${field(t("payExtra"), "payment.extra", { type: "textarea", span: "full" })}
         </div>
       </div>
@@ -989,8 +1039,9 @@
         setBind(path, getBindValue(el));
         if (path === "number") state.numberManual = true;
         scheduleSave();
+        const reveal = app.querySelector(`[data-reveal="${CSS.escape(path)}"]`);
+        if (el.type === "checkbox" && reveal) reveal.hidden = !el.checked;
         refreshPreviewOnly();
-        if (path === "taxEnabled" || path.startsWith("payment.")) render();
       });
     });
 

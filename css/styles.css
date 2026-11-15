@@ -166,7 +166,7 @@ html:has(.app-shell) #app {
 .editor .pay-block,
 .editor label.lbl { min-width: 0; max-width: 100%; }
 .editor .logo-row > div { min-width: 0; flex: 1; }
-.editor input,
+.editor input:not([type="checkbox"]):not([type="radio"]),
 .editor select,
 .editor textarea {
   min-width: 0;
@@ -204,8 +204,27 @@ label.lbl input:focus, label.lbl select:focus, label.lbl textarea:focus {
 .icon-btn:hover { color: var(--danger); }
 
 .pay-block { display: grid; gap: 8px; }
-.check { display: flex; align-items: center; gap: 6px; font-size: 13px; }
-.check input { accent-color: var(--accent); }
+.check {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  width: max-content;
+  max-width: 100%;
+}
+.check input[type="checkbox"],
+.check input[type="radio"] {
+  width: auto;
+  min-width: auto;
+  max-width: none;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.check span { flex: 0 1 auto; min-width: 0; }
 
 .hint { font-size: 11px; color: var(--ink-faint); margin: 4px 0 0; line-height: 1.45; }
 .pro-box {
