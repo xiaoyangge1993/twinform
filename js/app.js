@@ -500,6 +500,7 @@
     const effectiveTemplate = state.template;
 
     app.innerHTML = `
+      <div class="app-shell">
       <header class="app-header">
         <a class="brand" href="./">
           <img src="assets/logo.svg" alt="Twinform" />
@@ -552,6 +553,7 @@
         </main>
       </div>
       ${siteFooter()}
+      </div>
       ${modalHtml()}
     `;
     bind();
