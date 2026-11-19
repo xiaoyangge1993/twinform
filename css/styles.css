@@ -104,6 +104,36 @@ html:has(.app-shell) #app {
   height: 100%;
   overflow: hidden;
 }
+
+.static-intro {
+  margin: 0;
+  padding: 8px 18px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--line);
+}
+.static-intro h1 {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+.static-intro p { margin: 0; }
+html:has(.app-shell) body {
+  display: flex;
+  flex-direction: column;
+}
+html:has(.app-shell) .static-intro {
+  flex: 0 0 auto;
+}
+html:has(.app-shell) #app {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -382,7 +412,7 @@ label.lbl input:focus, label.lbl select:focus, label.lbl textarea:focus {
 
 @media print {
   body { background: #fff; }
-  .app-header, .editor, .preview-toolbar, .modal-back, .disclaimer-banner, .site-footer { display: none !important; }
+  .app-header, .editor, .preview-toolbar, .modal-back, .disclaimer-banner, .site-footer, .static-intro { display: none !important; }
   .layout, .preview-pane { display: block; max-height: none; padding: 0; overflow: visible; }
   .preview-scale { transform: none !important; }
   .sheet { box-shadow: none; margin: 0; }
