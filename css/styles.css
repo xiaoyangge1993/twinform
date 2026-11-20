@@ -48,7 +48,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .brand { display: flex; align-items: center; gap: 10px; margin-right: 8px; text-decoration: none; color: inherit; }
 .brand img { width: 32px; height: 32px; }
 .brand-name { font-weight: 700; letter-spacing: 0.01em; line-height: 1.1; }
-.brand-name small { display: block; font-weight: 400; color: var(--ink-soft); font-size: 11px; letter-spacing: 0; }
+.brand-name small { display: block; white-space: nowrap; font-weight: 400; color: var(--ink-soft); font-size: 11px; letter-spacing: 0; }
 
 .header-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; max-width: 100%; }
 .header-group + .header-group { margin-left: 4px; }
@@ -56,10 +56,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   margin-left: auto;
   display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
   max-width: 100%;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   justify-content: flex-end;
-  /* If the first row hasn't enough room, wrap to a full-width row and let buttons wrap. */
-  min-width: min(100%, 34rem);
+  min-width: 0;
 }
 .seg { flex-wrap: wrap; max-width: 100%; }
 .field-inline { min-width: 0; }
@@ -79,7 +78,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
 .btn {
   border: 1px solid var(--line-strong); background: #fff; border-radius: 9px;
-  padding: 7px 12px; font-size: 13px; font-weight: 700;
+  padding: 7px 11px; font-size: 13px; font-weight: 700; white-space: nowrap;
 }
 .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .btn-primary { background: var(--accent); color: #fffdf8; border-color: var(--accent); }

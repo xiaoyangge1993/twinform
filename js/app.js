@@ -35,6 +35,7 @@
       tagline: "双语报价单与形式发票",
       quote: "报价单",
       proforma: "形式发票",
+      proformaShort: "形式发票",
       langZh: "中文",
       langEn: "English",
       langBoth: "中英对照",
@@ -128,9 +129,10 @@
       amount: "金额",
     },
     en: {
-      tagline: "Bilingual quotes & pro forma invoices",
+      tagline: "Bilingual quotes & PIs",
       quote: "Quotation",
       proforma: "Pro Forma Invoice",
+      proformaShort: "Pro Forma",
       langZh: "中文",
       langEn: "English",
       langBoth: "Bilingual",
@@ -138,7 +140,7 @@
       drafts: "Drafts",
       saveDraft: "Save draft",
       exportPdf: "Download PDF",
-      print: "Print / Save as PDF",
+      print: "Print",
       example: "Load example",
       clear: "Reset",
       seller: "From",
@@ -562,7 +564,7 @@
         <div class="header-group">
           <div class="seg" data-field="docType">
             <button type="button" data-value="quote" aria-pressed="${state.docType === "quote"}">${t("quote")}</button>
-            <button type="button" data-value="proforma" aria-pressed="${state.docType === "proforma"}">${t("proforma")}</button>
+            <button type="button" data-value="proforma" aria-pressed="${state.docType === "proforma"}">${t("proformaShort")}</button>
           </div>
           <div class="seg" data-field="langMode">
             <button type="button" data-value="zh" aria-pressed="${state.langMode === "zh"}">${t("langZh")}</button>
